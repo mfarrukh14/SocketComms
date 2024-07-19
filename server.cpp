@@ -2,6 +2,7 @@
 #include<WinSock2.h>
 #include<WS2tcpip.h>
 #include<tchar.h>
+#include<thread>
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -13,6 +14,32 @@ bool initialize()
 	WSADATA data;
 
 	return WSAStartup(MAKEWORD(2, 2), &data) == 0;
+}
+
+
+void InteractWithClient(SOCKET clientSocket)
+{
+
+	// recieving messages from client
+	cout << "Client Connected" << endl;
+	char buffer[4096];
+
+	while (1)
+	{
+		int bytesRec = recv(clientSocket, buffer, sizeof(buffer), 0);
+
+		if (bytesRec <= 0)
+		{
+			cout << "Client Disconnected" << endl;
+			break;
+		}
+
+		string message(buffer, bytesRec);
+
+		cout << "Message recieved from client: " << message << endl;
+	}
+
+	closesocket(clientSocket);
 }
 
 int main()
@@ -78,23 +105,19 @@ int main()
 	cout << "Server has started listening on port: " << port << endl;
 
 
-	// Accepting client on server socket
-	SOCKET clientSocket = accept(listeningSocket, nullptr, nullptr);
-	if (clientSocket == INVALID_SOCKET)
+	while (1)
 	{
-		cout << "Invalid Client socket" << endl;
+		// Accepting client on server socket
+		SOCKET clientSocket = accept(listeningSocket, nullptr, nullptr);
+		if (clientSocket == INVALID_SOCKET)
+		{
+			cout << "Invalid Client socket" << endl;
+		}
+
+		thread t1(InteractWithClient, clientSocket);
 	}
 
-	// recieving messages from client
-	char buffer[4096];
-	int bytesRec = recv(clientSocket, buffer, sizeof(buffer), 0);
 
-	string message(buffer, bytesRec);
-
-	cout << "Message recieved from client: " << message << endl;
-
-
-	closesocket(clientSocket);
 	closesocket(listeningSocket);
 
 	// Always perform a cleanup at the end
