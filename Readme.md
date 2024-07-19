@@ -1,6 +1,6 @@
 # ChatComms
 
-![Chatting App Logo](./logo.png =250x)
+<img src="logo.jpg" alt="logo" width="200"/>
 
 ChatComms is a Terminal-Based Chatting App! This application allows clients to chat with each other using socket programming.
 
