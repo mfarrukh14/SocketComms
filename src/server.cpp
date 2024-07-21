@@ -3,6 +3,7 @@
 #include<WS2tcpip.h>
 #include<tchar.h>
 #include<thread>
+#include<vector>
 
 #pragma comment(lib,"ws2_32.lib")
 
@@ -17,7 +18,7 @@ bool initialize()
 }
 
 
-void InteractWithClient(SOCKET clientSocket)
+void InteractWithClient(SOCKET clientSocket, vector<SOCKET>& clients)
 {
 
 	// recieving messages from client
@@ -37,6 +38,21 @@ void InteractWithClient(SOCKET clientSocket)
 		string message(buffer, bytesRec);
 
 		cout << "Message recieved from client: " << message << endl;
+
+		for (auto client : clients)
+		{
+			if (client != clientSocket)
+			{
+				send(client, message.c_str(), message.length(), 0);
+			}
+		}
+	}
+
+	auto it = find(clients.begin(), clients.end(), clientSocket);
+
+	if (it != clients.end())
+	{
+		clients.erase(it);
 	}
 
 	closesocket(clientSocket);
@@ -104,7 +120,7 @@ int main()
 
 	cout << "Server has started listening on port: " << port << endl;
 
-
+	vector<SOCKET> clients;
 	while (1)
 	{
 		// Accepting client on server socket
@@ -114,7 +130,9 @@ int main()
 			cout << "Invalid Client socket" << endl;
 		}
 
-		thread t1(InteractWithClient, clientSocket);
+		clients.push_back(clientSocket);
+		thread t1(InteractWithClient, clientSocket, std::ref(clients));
+		t1.detach();
 	}
 
 

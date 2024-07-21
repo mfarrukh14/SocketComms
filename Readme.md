@@ -10,3 +10,8 @@ SocketComms is a Terminal-Based Chatting App! This application allows clients to
 ![Chatting App Logo](./architecture.png)
 
 
+## Working
+
+![Working](./working.png)
+
+
